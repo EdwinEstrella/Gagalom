@@ -59,3 +59,4 @@ claude/
 *.aab
 flutter_build/
 ephemeral/
+testsrpite_tests/

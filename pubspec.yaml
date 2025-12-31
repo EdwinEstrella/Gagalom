@@ -25,6 +25,24 @@ dependencies:
   intl: ^0.20.1
   equatable: ^2.0.7
 
+  # HTTP & API
+  http: ^1.2.0
+  dio: ^5.4.0
+
+  # Authentication & Security
+  crypto: ^3.0.3
+  flutter_secure_storage: ^9.0.0
+  jwt_decode: ^0.3.1
+
+  # Stripe Payments
+  flutter_stripe: ^10.0.0
+
+  # Social Auth (optional)
+  google_sign_in: ^6.2.1
+
+  # Form Validation
+  form_field_validator: ^1.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
