@@ -69,8 +69,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF8E6CEF),
-                      foregroundColor: Colors.white,
+                      backgroundColor: theme.colorScheme.primary,
+                      foregroundColor: theme.colorScheme.onPrimary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(100),
                       ),
@@ -88,9 +88,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                     child: RichText(
                       text: TextSpan(
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: Color(0xFF272727),
+                          color: theme.colorScheme.onSurface,
                           letterSpacing: -0.408,
                         ),
                         children: [

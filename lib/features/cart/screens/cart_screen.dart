@@ -37,7 +37,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       id: '1',
       name: "Men's Harrington Jacket",
       price: '\$148',
-      imageUrl: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=322&h=440&fit=crop',
+      imageUrl: 'assets/images/products/hoodies/harrington_jacket.jpg', // Ensure this exists or map to available one
       size: 'M',
       color: 'Lemon',
       quantity: 1,
@@ -46,7 +46,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       id: '2',
       name: "Men's Coaches Jacket",
       price: '\$52.00',
-      imageUrl: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=322&h=440&fit=crop',
+      imageUrl: 'assets/images/products/hoodies/coaches_jacket.jpg',
       size: 'M',
       color: 'Black',
       quantity: 1,
@@ -130,15 +130,15 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   // Promo Code
                   _buildPromoCode(theme),
 
-                  const SizedBox(height: 120),
+                  const SizedBox(height: 40), // Spacing for bottom bar
                 ],
               ),
             ),
 
             // Back Button
             Positioned(
-              top: 63,
-              left: 27,
+              top: 8,
+              left: 24,
               child: GestureDetector(
                 onTap: () => Navigator.pop(context),
                 child: Container(
@@ -156,16 +156,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 ),
               ),
             ),
-
-            // Checkout Button
-            Positioned(
-              bottom: 20,
-              left: 0,
-              right: 0,
-              child: _buildCheckoutButton(theme),
-            ),
           ],
         ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: _buildCheckoutButton(theme),
       ),
     );
   }
@@ -255,7 +250,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(4),
               image: DecorationImage(
-                image: NetworkImage(item.imageUrl),
+                image: item.imageUrl.startsWith('http')
+                    ? NetworkImage(item.imageUrl) as ImageProvider
+                    : AssetImage(item.imageUrl),
                 fit: BoxFit.cover,
               ),
             ),
@@ -314,9 +311,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                               const TextSpan(text: ' - '),
                               TextSpan(
                                 text: item.size,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF272727),
+                                  color: theme.colorScheme.onSurface,
                                 ),
                               ),
                             ],
@@ -334,9 +331,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                               const TextSpan(text: ' - '),
                               TextSpan(
                                 text: item.color,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF272727),
+                                  color: theme.colorScheme.onSurface,
                                 ),
                               ),
                             ],
@@ -369,9 +366,17 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        // Plus Button
-                        GestureDetector(
+                      const SizedBox(width: 12),
+                      Text(
+                        '${item.quantity}',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // Plus Button
+                      GestureDetector(
                           onTap: () {
                             setState(() {
                               item.quantity++;
@@ -494,7 +499,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
 
   Widget _buildCheckoutButton(ThemeData theme) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
       child: GestureDetector(
         onTap: () {
           Navigator.push(

@@ -5,12 +5,16 @@ class ProductDetailScreen extends ConsumerStatefulWidget {
   final String productName;
   final String productPrice;
   final String imageUrl;
+  final String description;
+  final List<String> availableColors;
 
   const ProductDetailScreen({
     super.key,
     required this.productName,
     required this.productPrice,
     required this.imageUrl,
+    this.description = '',
+    this.availableColors = const [],
   });
 
   @override
@@ -19,7 +23,7 @@ class ProductDetailScreen extends ConsumerStatefulWidget {
 
 class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   String _selectedSize = 'S';
-  String _selectedColor = 'Orange';
+  late String _selectedColor;
   int _quantity = 1;
   bool _isFavorite = false;
 
@@ -30,6 +34,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     'Red': const Color(0xFFFA3636),
     'Yellow': const Color(0xFFF4BD2F),
     'Blue': const Color(0xFF4468E5),
+    'Cream': const Color(0xFFFFFDD0),
   };
 
   final List<String> _productImages = [];
@@ -37,6 +42,13 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   @override
   void initState() {
     super.initState();
+    // Initialize selected color
+    if (widget.availableColors.isNotEmpty) {
+      _selectedColor = widget.availableColors.first;
+    } else {
+      _selectedColor = _colors.keys.first;
+    }
+
     // Add the main image 3 times for demo
     _productImages.add(widget.imageUrl);
     _productImages.add(widget.imageUrl);
@@ -110,7 +122,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: Text(
-                      'Built for life and made to last, this full-zip corduroy jacket is part of our Nike Life collection. The spacious fit gives you plenty of room to layer underneath, while the soft corduroy keeps it casual and timeless.',
+                      widget.description.isNotEmpty
+                          ? widget.description
+                          : 'Built for life and made to last, this product is crafted with premium materials to ensure comfort and durability.',
                       style: TextStyle(
                         fontSize: 12,
                         color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
@@ -208,7 +222,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
                 image: DecorationImage(
-                  image: NetworkImage(_productImages[index]),
+                  image: _productImages[index].startsWith('http')
+                      ? NetworkImage(_productImages[index]) as ImageProvider
+                      : AssetImage(_productImages[index]),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -644,7 +660,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  ..._colors.entries.map((entry) {
+                  ..._colors.entries.where((entry) {
+                    if (widget.availableColors.isEmpty) return true;
+                    return widget.availableColors.contains(entry.key);
+                  }).map((entry) {
                     final colorName = entry.key;
                     final color = entry.value;
                     final isSelected = _selectedColor == colorName;

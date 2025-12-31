@@ -38,27 +38,49 @@ class ProductCard extends StatelessWidget {
             // Product Image
             Stack(
               children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                  child: CachedNetworkImage(
-                    imageUrl: imageUrl,
-                    height: 220,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      height: 220,
-                      color: theme.colorScheme.surface,
-                      child: const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      height: 220,
-                      color: theme.colorScheme.surface,
-                      child: const Icon(Icons.error),
-                    ),
+                  ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                    child: imageUrl.startsWith('http')
+                        ? CachedNetworkImage(
+                            imageUrl: imageUrl,
+                            height: 220,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            memCacheWidth: 600,
+                            placeholder: (context, url) => Container(
+                              height: 220,
+                              color: theme.colorScheme.surface,
+                              child: const Center(
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            ),
+                            errorWidget: (context, url, error) => Container(
+                              height: 220,
+                              color: theme.colorScheme.surface,
+                              child: const Icon(Icons.error),
+                            ),
+                          )
+                        : Image.asset(
+                            imageUrl,
+                            height: 220,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            gaplessPlayback: true,
+                            cacheWidth: 800,
+                            errorBuilder: (context, error, stackTrace) => Container(
+                              height: 220,
+                              color: theme.colorScheme.surface,
+                              child: const Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.broken_image),
+                                  SizedBox(height: 4),
+                                  Text('Image not found', style: TextStyle(fontSize: 10)),
+                                ],
+                              ),
+                            ),
+                          ),
                   ),
-                ),
                 // Favorite Button
                 Positioned(
                   top: 5,

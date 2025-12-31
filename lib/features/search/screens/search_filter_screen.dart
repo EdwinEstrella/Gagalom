@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/data/products_data.dart';
+import '../../../shared/widgets/product_card.dart';
+import '../../../features/product/screens/product_detail_screen.dart';
 
 enum SearchScreenMode {
   categories,  // Shop by Categories
@@ -65,264 +68,26 @@ class _SearchFilterScreenState extends ConsumerState<SearchFilterScreen> {
     ),
   ];
 
-  // Sample products by category
-  final List<ProductItem> _allProducts = [
-    // Sudaderas / Hoodies
-    ProductItem(
-      name: 'Pullover Hoodie',
-      price: 45.99,
-      category: 'Sudaderas',
-      imageUrl: 'https://images.unsplash.com/photo-1551487180522-86e4fff3af7f?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Zip Hoodie',
-      price: 52.99,
-      category: 'Sudaderas',
-      imageUrl: 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Fleece Hoodie',
-      price: 38.99,
-      category: 'Sudaderas',
-      imageUrl: 'https://images.unsplash.com/photo-1578587018452-892bacefd3f2?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Graphic Hoodie',
-      price: 41.99,
-      category: 'Sudaderas',
-      imageUrl: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Classic Hoodie',
-      price: 44.99,
-      category: 'Sudaderas',
-      imageUrl: 'https://images.unsplash.com/photo-1576871337622-98d48d1cf531?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Premium Hoodie',
-      price: 59.99,
-      category: 'Sudaderas',
-      imageUrl: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Sport Hoodie',
-      price: 47.99,
-      category: 'Sudaderas',
-      imageUrl: 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Urban Hoodie',
-      price: 49.99,
-      category: 'Sudaderas',
-      imageUrl: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=322&h=440&fit=crop',
-    ),
+  List<Product> get _filteredProducts {
+    List<Product> products = ProductsData.allProducts;
 
-    // Shorts
-    ProductItem(
-      name: 'Classic Shorts',
-      price: 29.99,
-      category: 'Shorts',
-      imageUrl: 'https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Cargo Shorts',
-      price: 34.99,
-      category: 'Shorts',
-      imageUrl: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Running Shorts',
-      price: 24.99,
-      category: 'Shorts',
-      imageUrl: 'https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Denim Shorts',
-      price: 39.99,
-      category: 'Shorts',
-      imageUrl: 'https://images.unsplash.com/photo-1506634572416-48cdfe530110?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Athletic Shorts',
-      price: 27.99,
-      category: 'Shorts',
-      imageUrl: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Chino Shorts',
-      price: 32.99,
-      category: 'Shorts',
-      imageUrl: 'https://images.unsplash.com/photo-15158866570179-0f358da154a0?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'High Waisted Shorts',
-      price: 36.99,
-      category: 'Shorts',
-      imageUrl: 'https://images.unsplash.com/photo-1588169908258-36b4d2c0eb64?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Striped Shorts',
-      price: 28.99,
-      category: 'Shorts',
-      imageUrl: 'https://images.unsplash.com/photo-1594633312681-425c7c97db31?w=322&h=440&fit=crop',
-    ),
-
-    // Zapatos / Shoes
-    ProductItem(
-      name: 'Running Shoes',
-      price: 89.99,
-      category: 'Zapatos',
-      imageUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Casual Sneakers',
-      price: 75.99,
-      category: 'Zapatos',
-      imageUrl: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Sport Shoes',
-      price: 95.99,
-      category: 'Zapatos',
-      imageUrl: 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Walking Shoes',
-      price: 82.99,
-      category: 'Zapatos',
-      imageUrl: 'https://images.unsplash.com/photo-1460353581641-37baddab0fa2?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Training Shoes',
-      price: 99.99,
-      category: 'Zapatos',
-      imageUrl: 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Canvas Sneakers',
-      price: 65.99,
-      category: 'Zapatos',
-      imageUrl: 'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Basketball Shoes',
-      price: 120.99,
-      category: 'Zapatos',
-      imageUrl: 'https://images.unsplash.com/photo-1512374382149-233c42b6a83b?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Leather Sneakers',
-      price: 110.99,
-      category: 'Zapatos',
-      imageUrl: 'https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=322&h=440&fit=crop',
-    ),
-
-    // Bolsos / Bags
-    ProductItem(
-      name: 'Backpack',
-      price: 55.99,
-      category: 'Bolsos',
-      imageUrl: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Crossbody Bag',
-      price: 42.99,
-      category: 'Bolsos',
-      imageUrl: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Tote Bag',
-      price: 38.99,
-      category: 'Bolsos',
-      imageUrl: 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Travel Bag',
-      price: 72.99,
-      category: 'Bolsos',
-      imageUrl: 'https://images.unsplash.com/photo-1534269285838-0d1c659e8180?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Shoulder Bag',
-      price: 48.99,
-      category: 'Bolsos',
-      imageUrl: 'https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Messenger Bag',
-      price: 65.99,
-      category: 'Bolsos',
-      imageUrl: 'https://images.unsplash.com/photo-1597484661643-2f5fef26aa4b?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Mini Backpack',
-      price: 45.99,
-      category: 'Bolsos',
-      imageUrl: 'https://images.unsplash.com/photo-1594223274512-ad4803739b7c?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Leather Bag',
-      price: 85.99,
-      category: 'Bolsos',
-      imageUrl: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=322&h=440&fit=crop',
-    ),
-
-    // Accesorios / Accessories
-    ProductItem(
-      name: 'Watch Classic',
-      price: 129.99,
-      category: 'Accesorios',
-      imageUrl: 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Sunglasses',
-      price: 45.99,
-      category: 'Accesorios',
-      imageUrl: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Leather Belt',
-      price: 28.99,
-      category: 'Accesorios',
-      imageUrl: 'https://images.unsplash.com/photo-1553704571-c32d20e6c74e?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Wallet',
-      price: 35.99,
-      category: 'Accesorios',
-      imageUrl: 'https://images.unsplash.com/photo-1627123424574-724758594e93?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Cap',
-      price: 22.99,
-      category: 'Accesorios',
-      imageUrl: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Bracelet',
-      price: 18.99,
-      category: 'Accesorios',
-      imageUrl: 'https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Necklace',
-      price: 25.99,
-      category: 'Accesorios',
-      imageUrl: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=322&h=440&fit=crop',
-    ),
-    ProductItem(
-      name: 'Smart Watch',
-      price: 199.99,
-      category: 'Accesorios',
-      imageUrl: 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=322&h=440&fit=crop',
-    ),
-  ];
-
-  List<ProductItem> get _filteredProducts {
+    // Filter by Category
     if (_selectedCategory != null) {
-      return _allProducts.where((product) => product.category == _selectedCategory).toList();
+      products = products.where((product) => product.category == _selectedCategory).toList();
     }
-    return _allProducts;
+    
+    // Filter by Search Text
+    if (_searchController.text.isNotEmpty) {
+      final query = _searchController.text.toLowerCase();
+      products = products.where((product) => product.name.toLowerCase().contains(query)).toList();
+    }
+
+    // Filter by Gender (Mock logic as data doesn't have gender yet)
+    if (_selectedGender != 'All') {
+      // products = products.where((p) => p.gender == _selectedGender).toList();
+    }
+
+    return products;
   }
 
   int get _resultsCount => _filteredProducts.length;
@@ -746,107 +511,26 @@ class _SearchFilterScreenState extends ConsumerState<SearchFilterScreen> {
     );
   }
 
-  Widget _buildProductCard(ProductItem product) {
-    final theme = Theme.of(context);
-
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Product Image
-          Expanded(
-            flex: 220,
-            child: Stack(
-              children: [
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface,
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(8),
-                    ),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(8),
-                    ),
-                    child: Image.network(
-                      product.imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: theme.colorScheme.surface,
-                          child: Icon(
-                            Icons.image,
-                            size: 48,
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-                // Favorite Icon
-                Positioned(
-                  top: 5,
-                  right: 5,
-                  child: GestureDetector(
-                    onTap: () {
-                      // Toggle favorite
-                    },
-                    child: Container(
-                      width: 24,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surface.withValues(alpha: 0.7),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.favorite_border,
-                        size: 16,
-                        color: theme.colorScheme.onSurface,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+  Widget _buildProductCard(Product product) {
+    return ProductCard(
+      name: product.name,
+      price: product.price,
+      imageUrl: product.imageUrl,
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductDetailScreen(
+              productName: product.name,
+              productPrice: product.price,
+              imageUrl: product.imageUrl,
+              description: product.description,
+              availableColors: product.colors,
             ),
           ),
-
-          // Product Info
-          Padding(
-            padding: const EdgeInsets.all(4),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  product.name,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: theme.colorScheme.onSurface,
-                    height: 1.6,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '\$${product.price}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.onSurface,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+        );
+      },
+      onFavoriteTap: () {},
     );
   }
 

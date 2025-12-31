@@ -6,6 +6,7 @@ import '../../../shared/widgets/app_search_bar.dart';
 import '../../../features/search/screens/search_filter_screen.dart';
 import '../../../features/product/screens/product_detail_screen.dart';
 import '../../../features/cart/screens/cart_screen.dart';
+import '../../../core/data/products_data.dart';
 import 'categories_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -331,49 +332,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildProductCarousel(BuildContext context) {
-    // Lista de productos con imágenes reales de Unsplash
-    final products = [
-      {
-        'imageUrl': 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=322&h=440&fit=crop',
-        'name': 'Mohair Blouse',
-        'price': '\$24.55',
-      },
-      {
-        'imageUrl': 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=322&h=440&fit=crop',
-        'name': 'Carl max Cardigan',
-        'price': '\$34.99',
-      },
-      {
-        'imageUrl': 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=322&h=440&fit=crop',
-        'name': 'Cotton T-Shirt',
-        'price': '\$19.99',
-      },
-      {
-        'imageUrl': 'https://images.unsplash.com/photo-1576871337622-98d48d1cf531?w=322&h=440&fit=crop',
-        'name': 'Denim Jacket',
-        'price': '\$89.99',
-      },
-      {
-        'imageUrl': 'https://images.unsplash.com/photo-1551487180522-86e4fff3af7f?w=322&h=440&fit=crop',
-        'name': 'Pullover Hoodie',
-        'price': '\$45.99',
-      },
-      {
-        'imageUrl': 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=322&h=440&fit=crop',
-        'name': 'Zip Hoodie',
-        'price': '\$52.99',
-      },
-      {
-        'imageUrl': 'https://images.unsplash.com/photo-1578587018452-892bacefd3f2?w=322&h=440&fit=crop',
-        'name': 'Fleece Hoodie',
-        'price': '\$38.99',
-      },
-      {
-        'imageUrl': 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=322&h=440&fit=crop',
-        'name': 'Graphic Hoodie',
-        'price': '\$41.99',
-      },
-    ];
+    // Top Selling - Hoodies
+    final products = ProductsData.allProducts.where((p) => p.category == 'Sudaderas').take(5).toList();
 
     return SizedBox(
       height: 281,
@@ -386,17 +346,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           return Padding(
             padding: EdgeInsets.only(right: index < products.length - 1 ? 12 : 0),
             child: ProductCard(
-              imageUrl: product['imageUrl']!,
-              name: product['name']!,
-              price: product['price']!,
+              imageUrl: product.imageUrl,
+              name: product.name,
+              price: product.price,
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => ProductDetailScreen(
-                      productName: product['name']!,
-                      productPrice: product['price']!,
-                      imageUrl: product['imageUrl']!,
+                      productName: product.name,
+                      productPrice: product.price,
+                      imageUrl: product.imageUrl,
+                      description: product.description,
+                      availableColors: product.colors,
                     ),
                   ),
                 );
@@ -410,49 +372,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildNewProductsCarousel(BuildContext context) {
-    // Productos nuevos: Shorts, Zapatos, Bolsos, Accesorios
-    final products = [
-      {
-        'imageUrl': 'https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=322&h=440&fit=crop',
-        'name': 'Classic Shorts',
-        'price': '\$29.99',
-      },
-      {
-        'imageUrl': 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=322&h=440&fit=crop',
-        'name': 'Cargo Shorts',
-        'price': '\$34.99',
-      },
-      {
-        'imageUrl': 'https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=322&h=440&fit=crop',
-        'name': 'Running Shorts',
-        'price': '\$24.99',
-      },
-      {
-        'imageUrl': 'https://images.unsplash.com/photo-1506634572416-48cdfe530110?w=322&h=440&fit=crop',
-        'name': 'Denim Shorts',
-        'price': '\$39.99',
-      },
-      {
-        'imageUrl': 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=322&h=440&fit=crop',
-        'name': 'Athletic Shorts',
-        'price': '\$27.99',
-      },
-      {
-        'imageUrl': 'https://images.unsplash.com/photo-15158866570179-0f358da154a0?w=322&h=440&fit=crop',
-        'name': 'Chino Shorts',
-        'price': '\$32.99',
-      },
-      {
-        'imageUrl': 'https://images.unsplash.com/photo-1588169908258-36b4d2c0eb64?w=322&h=440&fit=crop',
-        'name': 'High Waisted Shorts',
-        'price': '\$36.99',
-      },
-      {
-        'imageUrl': 'https://images.unsplash.com/photo-1594633312681-425c7c97db31?w=322&h=440&fit=crop',
-        'name': 'Striped Shorts',
-        'price': '\$28.99',
-      },
-    ];
+    // New Products - Mixed categories (Shorts, Shoes, etc.)
+    final products = ProductsData.allProducts.where((p) => p.category != 'Sudaderas').take(8).toList();
 
     return SizedBox(
       height: 281,
@@ -465,17 +386,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           return Padding(
             padding: EdgeInsets.only(right: index < products.length - 1 ? 12 : 0),
             child: ProductCard(
-              imageUrl: product['imageUrl']!,
-              name: product['name']!,
-              price: product['price']!,
+              imageUrl: product.imageUrl,
+              name: product.name,
+              price: product.price,
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => ProductDetailScreen(
-                      productName: product['name']!,
-                      productPrice: product['price']!,
-                      imageUrl: product['imageUrl']!,
+                      productName: product.name,
+                      productPrice: product.price,
+                      imageUrl: product.imageUrl,
+                      description: product.description,
+                      availableColors: product.colors,
                     ),
                   ),
                 );

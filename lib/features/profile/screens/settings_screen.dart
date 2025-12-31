@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/providers/theme_provider.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -9,11 +10,13 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  bool _isDarkMode = false;
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final themeMode = ref.watch(themeProvider);
+    final isDarkMode = themeMode == ThemeMode.dark ||
+        (themeMode == ThemeMode.system &&
+            MediaQuery.of(context).platformBrightness == Brightness.dark);
 
     return SafeArea(
       bottom: false,
@@ -126,13 +129,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                     ),
                     Switch(
-                      value: _isDarkMode,
+                      value: isDarkMode,
                       onChanged: (value) {
-                        // Theme toggle will be implemented later
-                        // See theme_provider.dart for implementation instructions
-                        setState(() {
-                          _isDarkMode = value;
-                        });
+                         ref.read(themeProvider.notifier).setTheme(
+                           value ? ThemeMode.dark : ThemeMode.light
+                         );
                       },
                       activeTrackColor: theme.colorScheme.primary.withValues(alpha: 0.5),
                       activeThumbColor: theme.colorScheme.primary,

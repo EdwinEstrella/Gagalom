@@ -75,7 +75,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 height: 52,
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? const Color(0xFF8E6CEF)
+                                      ? theme.colorScheme.primary
                                       : theme.colorScheme.surface,
                                   borderRadius: BorderRadius.circular(100),
                                 ),
@@ -84,7 +84,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     gender,
                                     style: TextStyle(
                                       color: isSelected
-                                          ? Colors.white
+                                          ? theme.colorScheme.onPrimary
                                           : theme.colorScheme.onSurface,
                                       fontWeight: FontWeight.w400,
                                     ),
@@ -168,8 +168,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF8E6CEF),
-                          foregroundColor: Colors.white,
+                          backgroundColor: theme.colorScheme.primary,
+                          foregroundColor: theme.colorScheme.onPrimary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(100),
                           ),

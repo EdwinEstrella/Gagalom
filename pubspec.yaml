@@ -36,3 +36,8 @@ flutter:
   assets:
     - assets/icons/
     - assets/logoapp.png
+    - assets/images/products/hoodies/
+    - assets/images/products/shorts/
+    - assets/images/products/shoes/
+    - assets/images/products/bags/
+    - assets/images/products/accessories/
