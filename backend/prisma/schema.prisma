@@ -1,0 +1,143 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Modelo de Usuario
+model User {
+  id                Int       @id @default(autoincrement())
+  email             String    @unique
+  passwordHash      String    @map("password_hash")
+  firstName         String?   @map("first_name")
+  lastName          String?   @map("last_name")
+  gender            String?
+  ageRange          String?   @map("age_range")
+  role              String    @default("customer") // customer, seller, admin
+  stripeCustomerId  String?   @map("stripe_customer_id")
+  isActive          Boolean   @default(true) @map("is_active")
+  lastLogin         DateTime? @map("last_login")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  // Relaciones
+  refreshTokens     RefreshToken[]
+  orders            Order[]
+  products          Product[]
+  sellerRequests    SellerRequest[]
+
+  @@map("users")
+}
+
+// Tokens de refresco para JWT
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  token     String
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relaciones
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// Productos
+model Product {
+  id             Int       @id @default(autoincrement())
+  sellerId       Int?      @map("seller_id")
+  name           String
+  description    String?   @db.Text
+  price          Decimal   @db.Decimal(10, 2)
+  category       String
+  imageUrl       String?   @map("image_url")
+  localAssetPath String?   @map("local_asset_path")
+  stock          Int       @default(0)
+  isActive        Boolean   @default(true) @map("is_active")
+  stripePriceId  String?   @map("stripe_price_id")
+  views          Int       @default(0)
+  salesCount     Int       @default(0) @map("sales_count")
+  rating         Decimal   @default(0) @db.Decimal(3, 2)
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  // Relaciones
+  seller         User?     @relation(fields: [sellerId], references: [id], onDelete: SetNull)
+  orderItems     OrderItem[]
+
+  @@index([sellerId])
+  @@index([category])
+  @@index([isActive])
+  @@map("products")
+}
+
+// Solicitudes de vendedor
+model SellerRequest {
+  id                  Int       @id @default(autoincrement())
+  userId              Int       @map("user_id")
+  businessName        String    @map("business_name")
+  businessDescription String?   @map("business_description") @db.Text
+  businessType        String?   @map("business_type")
+  taxId               String?   @map("tax_id")
+  phone               String?
+  address             String?   @db.Text
+  city                String?
+  country             String    @default("España")
+  status              String    @default("pending") // pending, approved, rejected
+  rejectionReason     String?   @map("rejection_reason") @db.Text
+  reviewedBy          Int?      @map("reviewed_by")
+  reviewedAt          DateTime? @map("reviewed_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  // Relaciones
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@map("seller_requests")
+}
+
+// Órdenes de compra
+model Order {
+  id                   Int          @id @default(autoincrement())
+  userId               Int          @map("user_id")
+  stripePaymentIntentId String?     @unique @map("stripe_payment_intent_id")
+  totalAmount          Decimal      @map("total_amount") @db.Decimal(10, 2)
+  status               String       @default("pending") // pending, completed, failed, cancelled
+  shippingAddress      String?      @map("shipping_address") @db.Text
+  createdAt            DateTime     @default(now()) @map("created_at")
+  updatedAt            DateTime     @updatedAt @map("updated_at")
+
+  // Relaciones
+  user                 User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items                OrderItem[]
+
+  @@index([userId])
+  @@index([stripePaymentIntentId])
+  @@map("orders")
+}
+
+// Items de una orden
+model OrderItem {
+  id          Int      @id @default(autoincrement())
+  orderId     Int      @map("order_id")
+  productId   Int      @map("product_id")
+  quantity    Int
+  priceAtTime Decimal  @map("price_at_time") @db.Decimal(10, 2)
+
+  // Relaciones
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@map("order_items")
+}

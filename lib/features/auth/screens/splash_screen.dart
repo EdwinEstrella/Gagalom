@@ -52,7 +52,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     if (!mounted) return;
 
-    final isAuthenticated = await ref.read(authProvider.notifier).isAuthenticated();
+    // Leer el estado de autenticación directamente del provider
+    final authState = ref.read(authProvider);
+    final isAuthenticated = authState.isAuthenticated && !authState.isLoading;
 
     if (mounted) {
       if (isAuthenticated) {

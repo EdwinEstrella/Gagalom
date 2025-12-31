@@ -1,5 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:jwt_decode/jwt_decode.dart';
+import 'dart:convert';
 
 class StorageService {
   static const _storage = FlutterSecureStorage(
@@ -67,7 +67,14 @@ class StorageService {
     if (token == null) return true;
 
     try {
-      final Map<String, dynamic> payload = JwtDecoder.parse(token);
+      // Decodificar el JWT manualmente (formato: header.payload.signature)
+      final parts = token.split('.');
+      if (parts.length != 3) return true;
+
+      // Decodificar el payload (parte central)
+      final payload = _decodeBase64(parts[1]);
+
+      // Obtener la fecha de expiración
       final exp = payload['exp'];
       if (exp == null) return true;
 
@@ -76,6 +83,27 @@ class StorageService {
     } catch (e) {
       return true;
     }
+  }
+
+  // Decodificar base64 URL
+  static Map<String, dynamic> _decodeBase64(String str) {
+    String output = str.replaceAll('-', '+').replaceAll('_', '/');
+
+    switch (output.length % 4) {
+      case 0:
+        break;
+      case 2:
+        output += '==';
+        break;
+      case 3:
+        output += '=';
+        break;
+      default:
+        throw Exception('Illegal base64url string!"');
+    }
+
+    final decoded = utf8.decode(base64.decode(output));
+    return Map<String, dynamic>.from(json.decode(decoded));
   }
 
   // Limpiar todos los datos (logout)
