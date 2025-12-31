@@ -82,12 +82,12 @@ app.use((err, req, res, next) => {
 });
 
 // Iniciar servidor
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`
-  🚀 Servidor Gagalom Backend corriendo
-  📍 Port: ${PORT}
-  🌍 Environment: ${process.env.NODE_ENV}
-  🔗 API URL: http://localhost:${PORT}
+Servidor Gagalom Backend corriendo
+Port: ${PORT}
+Environment: ${process.env.NODE_ENV || 'development'}
+API URL: http://0.0.0.0:${PORT}
   `);
 });
 
