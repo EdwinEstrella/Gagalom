@@ -8,7 +8,7 @@ import {
   getCategories,
   getMyProducts,
 } from '../controllers/productController.js';
-import { authenticate } from '../middleware/auth.js';
+import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -18,9 +18,9 @@ router.get('/categories', getCategories);
 router.get('/:id', getProductById);
 
 // Rutas protegidas (requieren autenticación)
-router.post('/', authenticate, createProduct);
-router.put('/:id', authenticate, updateProduct);
-router.delete('/:id', authenticate, deleteProduct);
-router.get('/my/products', authenticate, getMyProducts);
+router.post('/', authenticateToken, createProduct);
+router.put('/:id', authenticateToken, updateProduct);
+router.delete('/:id', authenticateToken, deleteProduct);
+router.get('/my/products', authenticateToken, getMyProducts);
 
 export default router;

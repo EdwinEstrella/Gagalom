@@ -7,24 +7,24 @@ import {
   rejectSellerRequest,
   getSellerStats,
 } from '../controllers/sellerController.js';
-import { authenticate } from '../middleware/auth.js';
+import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
 // Crear solicitud para ser vendedor
-router.post('/request', authenticate, createSellerRequest);
+router.post('/request', authenticateToken, createSellerRequest);
 
 // Ver mi solicitud
-router.get('/my-request', authenticate, getMySellerRequest);
+router.get('/my-request', authenticateToken, getMySellerRequest);
 
 // Ver estadísticas de vendedor
-router.get('/stats', authenticate, getSellerStats);
+router.get('/stats', authenticateToken, getSellerStats);
 
 // Rutas de admin - Ver todas las solicitudes
-router.get('/requests', authenticate, getAllSellerRequests);
+router.get('/requests', authenticateToken, getAllSellerRequests);
 
 // Rutas de admin - Aprobar/Rechazar solicitudes
-router.put('/requests/:id/approve', authenticate, approveSellerRequest);
-router.put('/requests/:id/reject', authenticate, rejectSellerRequest);
+router.put('/requests/:id/approve', authenticateToken, approveSellerRequest);
+router.put('/requests/:id/reject', authenticateToken, rejectSellerRequest);
 
 export default router;
