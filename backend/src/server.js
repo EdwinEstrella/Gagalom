@@ -12,6 +12,10 @@ import { apiLimiter, loginLimiter, registerLimiter } from './middleware/rateLimi
 import * as authController from './controllers/authController.js';
 import * as stripeController from './controllers/stripeController.js';
 
+// Importar rutas
+import productRoutes from './routes/productRoutes.js';
+import sellerRoutes from './routes/sellerRoutes.js';
+
 dotenv.config();
 
 const app = express();
@@ -56,6 +60,12 @@ app.post('/api/webhook/stripe', express.raw({ type: 'application/json' }), strip
 
 // Rutas de productos (opcional, para admin)
 app.post('/api/products/create', authenticateToken, stripeController.createProduct);
+
+// Nuevas rutas de productos con Prisma
+app.use('/api/products', productRoutes);
+
+// Nuevas rutas de vendedores
+app.use('/api/seller', sellerRoutes);
 
 // Manejo de errores 404
 app.use((req, res) => {

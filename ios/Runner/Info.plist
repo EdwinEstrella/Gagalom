@@ -45,5 +45,7 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>StripePublishableKey</key>
+	<string>pk_test_YOUR_STRIPE_PUBLISHABLE_KEY_HERE</string>
 </dict>
 </plist>

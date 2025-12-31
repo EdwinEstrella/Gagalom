@@ -28,6 +28,12 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // Stripe Publishable Key
+        // Reemplazar con tu clave real de Stripe
+        // Para desarrollo usa pk_test_...
+        // Para producción usa pk_live_...
+        manifestPlaceholders["stripePublishableKey"] = "pk_test_YOUR_STRIPE_PUBLISHABLE_KEY_HERE"
     }
 
     buildTypes {
