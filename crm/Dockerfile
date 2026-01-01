@@ -1,15 +1,13 @@
 # Multi-stage build for Next.js 16 CRM application
 # Requires Node.js >= 20.9.0
-
 # ============================================
 # Stage 1: Dependencies
 # ============================================
 FROM node:20-alpine AS deps
-
 WORKDIR /app
 
-# Install OpenSSL for Prisma (Alpine uses musl, needs compat libraries)
-RUN apk add --no-cache openssl-dev
+# Install OpenSSL 3 and compatibility libraries for Prisma
+RUN apk add --no-cache libc6-compat openssl
 
 # Install dependencies based on the preferred package manager
 COPY package.json package-lock.json* ./
@@ -19,11 +17,10 @@ RUN npm ci
 # Stage 2: Builder
 # ============================================
 FROM node:20-alpine AS builder
-
 WORKDIR /app
 
-# Install OpenSSL for Prisma
-RUN apk add --no-cache openssl-dev
+# Install OpenSSL 3 and compatibility libraries
+RUN apk add --no-cache libc6-compat openssl
 
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
@@ -33,25 +30,23 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
-# Generate Prisma Client
+# Generate Prisma Client with correct binary target
 RUN npx prisma generate
 
 # Build Next.js application
-# Disable telemetry during build
 RUN npm run build
 
 # ============================================
 # Stage 3: Runner
 # ============================================
 FROM node:20-alpine AS runner
-
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Install OpenSSL for runtime Prisma queries
-RUN apk add --no-cache openssl-dev
+# Install OpenSSL 3 and compatibility libraries for runtime
+RUN apk add --no-cache libc6-compat openssl
 
 # Create a non-root user for security
 RUN addgroup --system --gid 1001 nodejs
