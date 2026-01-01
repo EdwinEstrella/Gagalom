@@ -20,6 +20,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.BACKEND_HOST || '0.0.0.0';
 
 // Middlewares de seguridad
 app.use(helmet({
@@ -82,12 +83,12 @@ app.use((err, req, res, next) => {
 });
 
 // Iniciar servidor
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, HOST, () => {
   console.log(`
 Servidor Gagalom Backend corriendo
 Port: ${PORT}
+Host: ${HOST}
 Environment: ${process.env.NODE_ENV || 'development'}
-API URL: http://0.0.0.0:${PORT}
   `);
 });
 
