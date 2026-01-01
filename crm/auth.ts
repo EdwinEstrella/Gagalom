@@ -22,8 +22,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null
         }
 
-        // Use the existing users table from the main app
-        const user = await prisma.user.findUnique({
+        // Use CRM users table only
+        const user = await prisma.crmUser.findUnique({
           where: { email: credentials.email as string },
         })
 
@@ -31,8 +31,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null
         }
 
-        // Check if user is admin
-        if (user.role !== "admin") {
+        // Check if user is active
+        if (!user.isActive) {
           return null
         }
 
@@ -46,9 +46,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         return {
-          id: user.id.toString(),
+          id: user.id,
           email: user.email,
-          name: `${user.firstName} ${user.lastName}`.trim(),
+          name: user.name,
           role: user.role,
         }
       },

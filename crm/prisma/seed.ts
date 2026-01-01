@@ -4,25 +4,45 @@ import bcrypt from "bcryptjs"
 const prisma = new PrismaClient()
 
 async function main() {
-  // Create admin user in the existing users table
+  // Create CRM admin user
   const hashedPassword = await bcrypt.hash("admin123", 10)
 
-  const admin = await prisma.user.upsert({
+  const admin = await prisma.crmUser.upsert({
     where: { email: "admin@sepzy.com" },
     update: {},
     create: {
       email: "admin@sepzy.com",
-      firstName: "Admin",
-      lastName: "User",
+      name: "Admin Sepzy",
       passwordHash: hashedPassword,
       role: "admin",
       isActive: true,
     },
   })
 
-  console.log("✅ Admin user created:", admin.email)
+  console.log("✅ CRM Admin user created:", admin.email)
   console.log("📧 Email: admin@sepzy.com")
   console.log("🔑 Password: admin123")
+  console.log("👤 Role:", admin.role)
+
+  // Create a staff user
+  const staffPassword = await bcrypt.hash("staff123", 10)
+
+  const staff = await prisma.crmUser.upsert({
+    where: { email: "staff@sepzy.com" },
+    update: {},
+    create: {
+      email: "staff@sepzy.com",
+      name: "Staff User",
+      passwordHash: staffPassword,
+      role: "staff",
+      isActive: true,
+    },
+  })
+
+  console.log("\n✅ CRM Staff user created:", staff.email)
+  console.log("📧 Email: staff@sepzy.com")
+  console.log("🔑 Password: staff123")
+  console.log("👤 Role:", staff.role)
 }
 
 main()
