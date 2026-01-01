@@ -7,15 +7,17 @@ async function main() {
   // Create CRM admin user
   const hashedPassword = await bcrypt.hash("admin123", 10)
 
-  const admin = await prisma.crmUser.upsert({
+  const admin = await prisma.crm_users.upsert({
     where: { email: "admin@sepzy.com" },
     update: {},
     create: {
+      id: crypto.randomUUID(),
       email: "admin@sepzy.com",
       name: "Admin Sepzy",
-      passwordHash: hashedPassword,
+      password_hash: hashedPassword,
       role: "admin",
-      isActive: true,
+      is_active: true,
+      updated_at: new Date(),
     },
   })
 
@@ -27,15 +29,17 @@ async function main() {
   // Create a staff user
   const staffPassword = await bcrypt.hash("staff123", 10)
 
-  const staff = await prisma.crmUser.upsert({
+  const staff = await prisma.crm_users.upsert({
     where: { email: "staff@sepzy.com" },
     update: {},
     create: {
+      id: crypto.randomUUID(),
       email: "staff@sepzy.com",
       name: "Staff User",
-      passwordHash: staffPassword,
+      password_hash: staffPassword,
       role: "staff",
-      isActive: true,
+      is_active: true,
+      updated_at: new Date(),
     },
   })
 
