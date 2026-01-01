@@ -1,6 +1,6 @@
 class ApiConfig {
   // Cambia esta URL según tu configuración del backend
-  static const String baseUrl = 'http://localhost:3000';
+  static const String baseUrl = 'http://apis-gagalom-irihu3-d97289-190-166-109-120.traefik.me';
 
   // Endpoints
   static const String authPath = '/api/auth';
