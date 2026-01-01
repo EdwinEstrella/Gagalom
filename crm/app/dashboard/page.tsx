@@ -1,122 +1,217 @@
-import { auth } from "@/auth"
-import { redirect } from "next/navigation"
+"use client"
 
-export default async function DashboardPage() {
-  const session = await auth()
+import { useEffect, useState } from "react"
 
-  if (!session) {
-    redirect("/login")
-  }
+interface Stats {
+  totalUsers: number
+  totalProducts: number
+  totalOrders: number
+  totalRevenue: number
+}
+
+export default function DashboardPage() {
+  const [stats, setStats] = useState<Stats>({
+    totalUsers: 0,
+    totalProducts: 0,
+    totalOrders: 0,
+    totalRevenue: 0,
+  })
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    // Fetch real stats from API
+    const fetchStats = async () => {
+      try {
+        // In the future, this will be a real API call
+        // For now, we'll set mock data
+        setStats({
+          totalUsers: 0,
+          totalProducts: 0,
+          totalOrders: 0,
+          totalRevenue: 0,
+        })
+      } catch (error) {
+        console.error("Error fetching stats:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchStats()
+  }, [])
+
+  const statCards = [
+    {
+      title: "Total Users",
+      value: stats.totalUsers,
+      icon: "👥",
+      color: "bg-blue-100",
+      trend: "+12% from last month",
+    },
+    {
+      title: "Products",
+      value: stats.totalProducts,
+      icon: "📦",
+      color: "bg-green-100",
+      trend: "+5% from last month",
+    },
+    {
+      title: "Orders",
+      value: stats.totalOrders,
+      icon: "🛒",
+      color: "bg-purple-100",
+      trend: "+8% from last month",
+    },
+    {
+      title: "Revenue",
+      value: `$${stats.totalRevenue.toLocaleString()}`,
+      icon: "💰",
+      color: "bg-yellow-100",
+      trend: "+23% from last month",
+    },
+  ]
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">CRM Dashboard</h1>
-            <p className="text-sm text-gray-500">Welcome back, {session.user?.name}</p>
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-[#1c1d21]">Dashboard Overview</h1>
+        <p className="text-sm text-[#8181a5] mt-1">
+          Welcome to your CRM dashboard. Here&apos;s what&apos;s happening today.
+        </p>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {statCards.map((card) => (
+          <div
+            key={card.title}
+            className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className={`w-12 h-12 ${card.color} rounded-lg flex items-center justify-center`}>
+                <span className="text-2xl">{card.icon}</span>
+              </div>
+              <span className="text-xs text-green-600 font-medium">+12%</span>
+            </div>
+            <p className="text-sm text-[#8181a5]">{card.title}</p>
+            <p className="text-2xl font-bold text-[#1c1d21] mt-1">
+              {loading ? "..." : card.value}
+            </p>
+            <p className="text-xs text-[#8181a5] mt-2">{card.trend}</p>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">{session.user?.email}</span>
-            <form action="/api/auth/signout" method="POST">
-              <button
-                type="submit"
-                className="px-4 py-2 bg-[#5e81f4] text-white rounded-lg text-sm font-semibold hover:bg-[#4a6ad4] transition-colors"
-              >
-                Sign Out
-              </button>
-            </form>
-          </div>
+        ))}
+      </div>
+
+      {/* Quick Actions */}
+      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+        <h2 className="text-lg font-semibold text-[#1c1d21] mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <button className="p-4 border border-gray-200 rounded-lg hover:border-[#5e81f4] hover:bg-blue-50 transition-all text-left group">
+            <span className="text-2xl mb-2 block">➕</span>
+            <span className="font-semibold text-[#1c1d21]">Add New User</span>
+            <p className="text-sm text-[#8181a5] mt-1">Create a new user account</p>
+          </button>
+
+          <button className="p-4 border border-gray-200 rounded-lg hover:border-[#5e81f4] hover:bg-blue-50 transition-all text-left group">
+            <span className="text-2xl mb-2 block">📦</span>
+            <span className="font-semibold text-[#1c1d21]">Add Product</span>
+            <p className="text-sm text-[#8181a5] mt-1">Add a new product to catalog</p>
+          </button>
+
+          <button className="p-4 border border-gray-200 rounded-lg hover:border-[#5e81f4] hover:bg-blue-50 transition-all text-left group">
+            <span className="text-2xl mb-2 block">📊</span>
+            <span className="font-semibold text-[#1c1d21]">View Reports</span>
+            <p className="text-sm text-[#8181a5] mt-1">Analytics and insights</p>
+          </button>
         </div>
-      </header>
+      </div>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">Total Users</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">0</p>
-              </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <span className="text-2xl">👥</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">Products</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">0</p>
-              </div>
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <span className="text-2xl">📦</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">Orders</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">0</p>
-              </div>
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <span className="text-2xl">🛒</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">Revenue</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">$0</p>
-              </div>
-              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <span className="text-2xl">💰</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
+      {/* Charts and Tables Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Orders */}
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button className="p-4 border border-gray-200 rounded-lg hover:border-[#5e81f4] hover:bg-blue-50 transition-colors text-left">
-              <span className="text-2xl mb-2 block">👤</span>
-              <span className="font-semibold text-gray-900">Manage Users</span>
-              <p className="text-sm text-gray-500 mt-1">View and manage all users</p>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-[#1c1d21]">Recent Orders</h2>
+            <button className="text-sm text-[#5e81f4] hover:underline font-medium">
+              View All
             </button>
-
-            <button className="p-4 border border-gray-200 rounded-lg hover:border-[#5e81f4] hover:bg-blue-50 transition-colors text-left">
-              <span className="text-2xl mb-2 block">📦</span>
-              <span className="font-semibold text-gray-900">Manage Products</span>
-              <p className="text-sm text-gray-500 mt-1">Add and edit products</p>
-            </button>
-
-            <button className="p-4 border border-gray-200 rounded-lg hover:border-[#5e81f4] hover:bg-blue-50 transition-colors text-left">
-              <span className="text-2xl mb-2 block">📊</span>
-              <span className="font-semibold text-gray-900">View Reports</span>
-              <p className="text-sm text-gray-500 mt-1">Analytics and insights</p>
-            </button>
+          </div>
+          <div className="space-y-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <span>🛒</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-[#1c1d21]">Order #{1000 + i}</p>
+                    <p className="text-xs text-[#8181a5]">Today, {10 + i}:00 AM</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-semibold text-[#1c1d21]">${(50 * i).toFixed(2)}</p>
+                  <p className="text-xs text-green-600">Completed</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Recent Activity */}
-        <div className="mt-8 bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
-          <div className="text-center py-8 text-gray-500">
-            <p>No recent activity</p>
-            <p className="text-sm mt-1">Activity will appear here as you use the CRM</p>
+        {/* Recent Users */}
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-[#1c1d21]">Recent Users</h2>
+            <button className="text-sm text-[#5e81f4] hover:underline font-medium">
+              View All
+            </button>
+          </div>
+          <div className="space-y-4">
+            {["John Doe", "Jane Smith", "Bob Johnson", "Alice Brown", "Charlie Wilson"].map((name, i) => (
+              <div key={i} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-[#5e81f4] rounded-full flex items-center justify-center text-white font-semibold">
+                    {name.charAt(0)}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-[#1c1d21]">{name}</p>
+                    <p className="text-xs text-[#8181a5]">user{i + 1}@example.com</p>
+                  </div>
+                </div>
+                <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full font-medium">
+                  Active
+                </span>
+              </div>
+            ))}
           </div>
         </div>
-      </main>
+      </div>
+
+      {/* Activity Feed */}
+      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+        <h2 className="text-lg font-semibold text-[#1c1d21] mb-4">Recent Activity</h2>
+        <div className="space-y-4">
+          {[
+            { action: "New order received", user: "John Doe", time: "2 minutes ago", icon: "🛒" },
+            { action: "Product updated", user: "Jane Smith", time: "15 minutes ago", icon: "📦" },
+            { action: "New user registered", user: "Bob Johnson", time: "1 hour ago", icon: "👤" },
+            { action: "Order completed", user: "Alice Brown", time: "2 hours ago", icon: "✅" },
+            { action: "Payment received", user: "Charlie Wilson", time: "3 hours ago", icon: "💳" },
+          ].map((activity, i) => (
+            <div key={i} className="flex items-start gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <span>{activity.icon}</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-[#1c1d21]">
+                  <span className="font-medium">{activity.user}</span> {activity.action}
+                </p>
+                <p className="text-xs text-[#8181a5] mt-1">{activity.time}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

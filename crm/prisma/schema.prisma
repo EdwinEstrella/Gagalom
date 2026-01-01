@@ -1,6 +1,3 @@
-// This is your Prisma schema file for the CRM
-// CRM uses separate tables and reads from main app tables
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,179 +7,148 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ============================================
-// CRM Authentication Models (separate from main app)
-// ============================================
+model crm_accounts {
+  id                  String    @id
+  type                String
+  provider            String
+  provider_account_id String
+  refresh_token       String?
+  access_token        String?
+  expires_at          Int?
+  token_type          String?
+  scope               String?
+  id_token            String?
+  session_state       String?
+  user_id             String
+  crm_users           crm_users @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-model CrmUser {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  passwordHash  String    @map("password_hash")
+  @@unique([provider, provider_account_id])
+  @@index([user_id])
+}
+
+model crm_sessions {
+  id            String    @id
+  session_token String    @unique
+  expires       DateTime
+  user_id       String
+  crm_users     crm_users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+}
+
+model crm_users {
+  id            String         @id
+  email         String         @unique
+  password_hash String
   name          String?
-  role          String    @default("staff") // admin, staff (CRM users only)
-  isActive      Boolean   @default(true) @map("is_active")
-  lastLogin     DateTime? @map("last_login")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
-
-  accounts      CrmAccount[]
-  sessions      CrmSession[]
-
-  @@map("crm_users")
+  role          String         @default("staff")
+  is_active     Boolean        @default(true)
+  last_login    DateTime?
+  created_at    DateTime       @default(now())
+  updated_at    DateTime
+  crm_accounts  crm_accounts[]
+  crm_sessions  crm_sessions[]
 }
 
-model CrmAccount {
-  id                String  @id @default(cuid())
-  userId            String  @map("user_id")
-  type              String
-  provider          String
-  providerAccountId String  @map("provider_account_id")
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.Text
-  session_state     String?
-
-  user CrmUser @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-  @@index([userId])
-  @@map("crm_accounts")
-}
-
-model CrmSession {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique @map("session_token")
-  userId       String  @map("user_id")
-  expires      DateTime
-  user         CrmUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@map("crm_sessions")
-}
-
-model CrmVerificationToken {
+model crm_verification_tokens {
   identifier String
   token      String   @unique
   expires    DateTime
 
   @@unique([identifier, token])
-  @@map("crm_verification_tokens")
 }
 
-// ============================================
-// Main App Tables (READ-ONLY - managed by main app)
-// ============================================
+model order_items {
+  id            Int      @id @default(autoincrement())
+  order_id      Int
+  product_id    Int
+  quantity      Int
+  price_at_time Decimal  @db.Decimal(10, 2)
+  orders        orders   @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  products      products @relation(fields: [product_id], references: [id])
 
-model AppUser {
-  id                Int       @id @default(autoincrement())
-  email             String    @unique
-  passwordHash      String    @map("password_hash")
-  firstName         String?   @map("first_name")
-  lastName          String?   @map("last_name")
-  gender            String?
-  ageRange          String?   @map("age_range")
-  role              String    @default("customer") // customer, seller, admin (from main app)
-  stripeCustomerId  String?   @map("stripe_customer_id")
-  isActive          Boolean   @default(true) @map("is_active")
-  lastLogin         DateTime? @map("last_login")
-  createdAt         DateTime  @default(now()) @map("created_at")
-  updatedAt         DateTime  @updatedAt @map("updated_at")
-
-  orders            AppOrder[]
-  products          AppProduct[]
-  sellerRequests    AppSellerRequest[]
-
-  @@map("users")
-  @@ignore  // Don't manage this table with Prisma migrations
+  @@index([order_id])
 }
 
-model AppProduct {
-  id             Int       @id @default(autoincrement())
-  sellerId       Int?      @map("seller_id")
-  name           String
-  description    String?   @db.Text
-  price          Decimal   @db.Decimal(10, 2)
-  category       String
-  imageUrl       String?   @map("image_url")
-  localAssetPath String?   @map("local_asset_path")
-  stock          Int       @default(0)
-  isActive        Boolean   @default(true) @map("is_active")
-  stripePriceId  String?   @map("stripe_price_id")
-  views          Int       @default(0)
-  salesCount     Int       @default(0) @map("sales_count")
-  rating         Decimal   @default(0) @db.Decimal(3, 2)
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
+model orders {
+  id                       Int           @id @default(autoincrement())
+  user_id                  Int
+  stripe_payment_intent_id String?       @unique
+  total_amount             Decimal       @db.Decimal(10, 2)
+  status                   String        @default("pending")
+  shipping_address         String?
+  created_at               DateTime      @default(now())
+  updated_at               DateTime
+  order_items              order_items[]
+  users                    users         @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  seller         AppUser?   @relation(fields: [sellerId], references: [id], onDelete: SetNull)
-  orderItems     AppOrderItem[]
+  @@index([stripe_payment_intent_id])
+  @@index([user_id])
+}
 
-  @@index([sellerId])
+model products {
+  id               Int           @id @default(autoincrement())
+  seller_id        Int?
+  name             String
+  description      String?
+  price            Decimal       @db.Decimal(10, 2)
+  category         String
+  image_url        String?
+  local_asset_path String?
+  stock            Int           @default(0)
+  is_active        Boolean       @default(true)
+  stripe_price_id  String?
+  views            Int           @default(0)
+  sales_count      Int           @default(0)
+  rating           Decimal       @default(0) @db.Decimal(3, 2)
+  created_at       DateTime      @default(now())
+  updated_at       DateTime
+  order_items      order_items[]
+  users            users?        @relation(fields: [seller_id], references: [id])
+
   @@index([category])
-  @@index([isActive])
-  @@map("products")
-  @@ignore
+  @@index([is_active])
+  @@index([seller_id])
 }
 
-model AppSellerRequest {
-  id                  Int       @id @default(autoincrement())
-  userId              Int       @map("user_id")
-  businessName        String    @map("business_name")
-  businessDescription String?   @map("business_description") @db.Text
-  businessType        String?   @map("business_type")
-  taxId               String?   @map("tax_id")
-  phone               String?
-  address             String?   @db.Text
-  city                String?
-  country             String    @default("España")
-  status              String    @default("pending")
-  rejectionReason     String?   @map("rejection_reason") @db.Text
-  reviewedBy          Int?      @map("reviewed_by")
-  reviewedAt          DateTime? @map("reviewed_at")
-  createdAt           DateTime  @default(now()) @map("created_at")
-  updatedAt           DateTime  @updatedAt @map("updated_at")
+model seller_requests {
+  id                   Int       @id @default(autoincrement())
+  user_id              Int
+  business_name        String
+  business_description String?
+  business_type        String?
+  tax_id               String?
+  phone                String?
+  address              String?
+  city                 String?
+  country              String    @default("España")
+  status               String    @default("pending")
+  rejection_reason     String?
+  reviewed_by          Int?
+  reviewed_at          DateTime?
+  created_at           DateTime  @default(now())
+  updated_at           DateTime
+  users                users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  user                AppUser    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
   @@index([status])
-  @@map("seller_requests")
-  @@ignore
+  @@index([user_id])
 }
 
-model AppOrder {
-  id                   Int          @id @default(autoincrement())
-  userId               Int          @map("user_id")
-  stripePaymentIntentId String?     @unique @map("stripe_payment_intent_id")
-  totalAmount          Decimal      @map("total_amount") @db.Decimal(10, 2)
-  status               String       @default("pending")
-  shippingAddress      String?      @map("shipping_address") @db.Text
-  createdAt            DateTime     @default(now()) @map("created_at")
-  updatedAt            DateTime     @updatedAt @map("updated_at")
-
-  user                 AppUser       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items                AppOrderItem[]
-
-  @@index([userId])
-  @@index([stripePaymentIntentId])
-  @@map("orders")
-  @@ignore
-}
-
-model AppOrderItem {
-  id          Int      @id @default(autoincrement())
-  orderId     Int      @map("order_id")
-  productId   Int      @map("product_id")
-  quantity    Int
-  priceAtTime Decimal  @map("price_at_time") @db.Decimal(10, 2)
-
-  order       AppOrder   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product     AppProduct @relation(fields: [productId], references: [id])
-
-  @@index([orderId])
-  @@map("order_items")
-  @@ignore
+model users {
+  id                 Int               @id @default(autoincrement())
+  email              String            @unique
+  password_hash      String
+  first_name         String?
+  last_name          String?
+  gender             String?
+  age_range          String?
+  role               String            @default("customer")
+  stripe_customer_id String?
+  is_active          Boolean           @default(true)
+  last_login         DateTime?
+  created_at         DateTime          @default(now())
+  updated_at         DateTime
+  orders             orders[]
+  products           products[]
+  seller_requests    seller_requests[]
 }

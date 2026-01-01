@@ -4,7 +4,7 @@ import { NextResponse } from "next/server"
 export default auth((req) => {
   const { pathname } = req.nextUrl
   const isLoggedIn = !!req.auth
-  const userRole = (req.auth?.user as any)?.role
+  const userRole = (req.auth?.user as { role?: string } | undefined)?.role
 
   // Public routes
   const isPublicRoute = pathname === "/login" || pathname === "/"
