@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import pool from '../database/db.js';
+import { prisma } from '../config/prisma.js';
 
 // Generar tokens JWT
 const generateTokens = (userId, email) => {
@@ -17,16 +17,13 @@ const generateTokens = (userId, email) => {
 export const register = async (req, res) => {
   const { email, password, firstName, lastName, gender, ageRange } = req.body;
 
-  const client = await pool.connect();
-
   try {
     // Verificar si el usuario ya existe
-    const existingUser = await client.query(
-      'SELECT id FROM users WHERE email = $1',
-      [email.toLowerCase()]
-    );
+    const existingUser = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+    });
 
-    if (existingUser.rows.length > 0) {
+    if (existingUser) {
       return res.status(400).json({ error: 'El email ya está registrado' });
     }
 
@@ -34,21 +31,17 @@ export const register = async (req, res) => {
     const saltRounds = 12;
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
-    // Crear cliente en Stripe (opcional, puedes hacerlo más tarde)
-    // const stripeCustomer = await stripe.customers.create({
-    //   email,
-    //   name: `${firstName} ${lastName}`,
-    // });
-
-    // Insertar usuario en la base de datos
-    const result = await client.query(
-      `INSERT INTO users (email, password_hash, first_name, last_name, gender, age_range)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING id, email, first_name, last_name, gender, age_range, created_at`,
-      [email.toLowerCase(), passwordHash, firstName, lastName, gender, ageRange]
-    );
-
-    const user = result.rows[0];
+    // Crear usuario en la base de datos con Prisma
+    const user = await prisma.user.create({
+      data: {
+        email: email.toLowerCase(),
+        passwordHash: passwordHash,
+        firstName: firstName,
+        lastName: lastName,
+        gender: gender,
+        ageRange: ageRange,
+      },
+    });
 
     // Generar tokens
     const { accessToken } = generateTokens(user.id, user.email);
@@ -58,10 +51,10 @@ export const register = async (req, res) => {
       user: {
         id: user.id,
         email: user.email,
-        firstName: user.first_name,
-        lastName: user.last_name,
+        firstName: user.firstName,
+        lastName: user.lastName,
         gender: user.gender,
-        ageRange: user.age_range,
+        ageRange: user.ageRange,
       },
       accessToken,
     });
@@ -69,8 +62,6 @@ export const register = async (req, res) => {
   } catch (error) {
     console.error('Error en registro:', error);
     res.status(500).json({ error: 'Error al registrar usuario' });
-  } finally {
-    client.release();
   }
 };
 
@@ -78,33 +69,28 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
-  const client = await pool.connect();
-
   try {
     // Buscar usuario por email
-    const result = await client.query(
-      'SELECT * FROM users WHERE email = $1 AND is_active = true',
-      [email.toLowerCase()]
-    );
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+    });
 
-    if (result.rows.length === 0) {
+    if (!user || !user.isActive) {
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }
 
-    const user = result.rows[0];
-
     // Verificar contraseña
-    const isValidPassword = await bcrypt.compare(password, user.password_hash);
+    const isValidPassword = await bcrypt.compare(password, user.passwordHash);
 
     if (!isValidPassword) {
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }
 
     // Actualizar último login
-    await client.query(
-      'UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1',
-      [user.id]
-    );
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLogin: new Date() },
+    });
 
     // Generar tokens
     const { accessToken } = generateTokens(user.id, user.email);
@@ -114,10 +100,10 @@ export const login = async (req, res) => {
       user: {
         id: user.id,
         email: user.email,
-        firstName: user.first_name,
-        lastName: user.last_name,
+        firstName: user.firstName,
+        lastName: user.lastName,
         gender: user.gender,
-        ageRange: user.age_range,
+        ageRange: user.ageRange,
       },
       accessToken,
     });
@@ -125,88 +111,85 @@ export const login = async (req, res) => {
   } catch (error) {
     console.error('Error en login:', error);
     res.status(500).json({ error: 'Error al iniciar sesión' });
-  } finally {
-    client.release();
   }
 };
 
 // Obtener perfil de usuario
 export const getProfile = async (req, res) => {
-  const client = await pool.connect();
-
   try {
-    const result = await client.query(
-      'SELECT id, email, first_name, last_name, gender, age_range, created_at FROM users WHERE id = $1',
-      [req.user.userId]
-    );
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.userId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        gender: true,
+        ageRange: true,
+        createdAt: true,
+      },
+    });
 
-    if (result.rows.length === 0) {
+    if (!user) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
-
-    const user = result.rows[0];
 
     res.json({
       user: {
         id: user.id,
         email: user.email,
-        firstName: user.first_name,
-        lastName: user.last_name,
+        firstName: user.firstName,
+        lastName: user.lastName,
         gender: user.gender,
-        ageRange: user.age_range,
-        createdAt: user.created_at,
+        ageRange: user.ageRange,
+        createdAt: user.createdAt,
       },
     });
 
   } catch (error) {
     console.error('Error al obtener perfil:', error);
     res.status(500).json({ error: 'Error al obtener perfil' });
-  } finally {
-    client.release();
   }
 };
 
 // Actualizar perfil
 export const updateProfile = async (req, res) => {
   const { firstName, lastName, gender, ageRange } = req.body;
-  const client = await pool.connect();
 
   try {
-    const result = await client.query(
-      `UPDATE users
-       SET first_name = COALESCE($1, first_name),
-           last_name = COALESCE($2, last_name),
-           gender = COALESCE($3, gender),
-           age_range = COALESCE($4, age_range),
-           updated_at = CURRENT_TIMESTAMP
-       WHERE id = $5
-       RETURNING id, email, first_name, last_name, gender, age_range`,
-      [firstName, lastName, gender, ageRange, req.user.userId]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Usuario no encontrado' });
-    }
-
-    const user = result.rows[0];
+    const user = await prisma.user.update({
+      where: { id: req.user.userId },
+      data: {
+        ...(firstName != null && { firstName }),
+        ...(lastName != null && { lastName }),
+        ...(gender != null && { gender }),
+        ...(ageRange != null && { ageRange }),
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        gender: true,
+        ageRange: true,
+      },
+    });
 
     res.json({
       message: 'Perfil actualizado exitosamente',
       user: {
         id: user.id,
         email: user.email,
-        firstName: user.first_name,
-        lastName: user.last_name,
+        firstName: user.firstName,
+        lastName: user.lastName,
         gender: user.gender,
-        ageRange: user.age_range,
+        ageRange: user.ageRange,
       },
     });
 
   } catch (error) {
     console.error('Error al actualizar perfil:', error);
     res.status(500).json({ error: 'Error al actualizar perfil' });
-  } finally {
-    client.release();
   }
 };
 
@@ -219,23 +202,20 @@ export const logout = async (req, res) => {
 // Cambiar contraseña
 export const changePassword = async (req, res) => {
   const { currentPassword, newPassword } = req.body;
-  const client = await pool.connect();
 
   try {
     // Obtener usuario
-    const result = await client.query(
-      'SELECT password_hash FROM users WHERE id = $1',
-      [req.user.userId]
-    );
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.userId },
+      select: { passwordHash: true },
+    });
 
-    if (result.rows.length === 0) {
+    if (!user) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
-    const user = result.rows[0];
-
     // Verificar contraseña actual
-    const isValidPassword = await bcrypt.compare(currentPassword, user.password_hash);
+    const isValidPassword = await bcrypt.compare(currentPassword, user.passwordHash);
 
     if (!isValidPassword) {
       return res.status(401).json({ error: 'Contraseña actual incorrecta' });
@@ -246,17 +226,15 @@ export const changePassword = async (req, res) => {
     const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
 
     // Actualizar contraseña
-    await client.query(
-      'UPDATE users SET password_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
-      [newPasswordHash, req.user.userId]
-    );
+    await prisma.user.update({
+      where: { id: req.user.userId },
+      data: { passwordHash: newPasswordHash },
+    });
 
     res.json({ message: 'Contraseña actualizada exitosamente' });
 
   } catch (error) {
     console.error('Error al cambiar contraseña:', error);
     res.status(500).json({ error: 'Error al cambiar contraseña' });
-  } finally {
-    client.release();
   }
 };
