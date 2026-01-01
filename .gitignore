@@ -60,3 +60,12 @@ claude/
 flutter_build/
 ephemeral/
 testsrpite_tests/
+
+# Testsprite testing framework
+testsprite_tests/
+
+# Project documentation (generated)
+PRD.md
+
+# Web server scripts
+serve_web.sh
