@@ -9,7 +9,7 @@ FROM node:20-alpine AS deps
 WORKDIR /app
 
 # Install OpenSSL for Prisma (Alpine uses musl, needs compat libraries)
-RUN apk add --no-cache openssl1.1-libcompat openssl1.1-curl
+RUN apk add --no-cache openssl-dev
 
 # Install dependencies based on the preferred package manager
 COPY package.json package-lock.json* ./
@@ -23,7 +23,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Install OpenSSL for Prisma
-RUN apk add --no-cache openssl1.1-libcompat openssl1.1-curl
+RUN apk add --no-cache openssl-dev
 
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
@@ -51,7 +51,7 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Install OpenSSL for runtime Prisma queries
-RUN apk add --no-cache openssl1.1-libcompat openssl1.1-curl
+RUN apk add --no-cache openssl-dev
 
 # Create a non-root user for security
 RUN addgroup --system --gid 1001 nodejs
