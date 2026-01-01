@@ -17,7 +17,6 @@ export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [roleFilter, setRoleFilter] = useState("all")
   const [error, setError] = useState("")
 
   useEffect(() => {
@@ -26,7 +25,8 @@ export default function UsersPage() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('/api/users')
+      // Fetch only customers by default
+      const response = await fetch('/api/users?role=customer')
       const data = await response.json()
 
       if (!response.ok) {
@@ -53,8 +53,7 @@ export default function UsersPage() {
     const matchesSearch =
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesRole = roleFilter === "all" || user.role === roleFilter
-    return matchesSearch && matchesRole
+    return matchesSearch
   })
 
   const getRoleColor = (role: string) => {
@@ -88,23 +87,23 @@ export default function UsersPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#1c1d21]">Users Management</h1>
+          <h1 className="text-2xl font-bold text-[#1c1d21]">Customers Management</h1>
           <p className="text-sm text-[#8181a5] mt-1">
-            Manage and monitor all users in the system
+            Manage and monitor all customers in the system
           </p>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-white rounded-lg p-4 border border-gray-200">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <span className="text-xl">👥</span>
+              <span className="text-xl">🛒</span>
             </div>
             <div>
               <p className="text-2xl font-bold text-[#1c1d21]">{users.length}</p>
-              <p className="text-xs text-[#8181a5]">Total Users</p>
+              <p className="text-xs text-[#8181a5]">Total Customers</p>
             </div>
           </div>
         </div>
@@ -112,41 +111,13 @@ export default function UsersPage() {
         <div className="bg-white rounded-lg p-4 border border-gray-200">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-              <span className="text-xl">🛒</span>
+              <span className="text-xl">✅</span>
             </div>
             <div>
               <p className="text-2xl font-bold text-[#1c1d21]">
-                {users.filter((u) => u.role === "customer").length}
+                {users.filter((u) => u.is_active !== false).length}
               </p>
-              <p className="text-xs text-[#8181a5]">Customers</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg p-4 border border-gray-200">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-              <span className="text-xl">🏪</span>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-[#1c1d21]">
-                {users.filter((u) => u.role === "seller").length}
-              </p>
-              <p className="text-xs text-[#8181a5]">Sellers</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg p-4 border border-gray-200">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-              <span className="text-xl">👑</span>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-[#1c1d21]">
-                {users.filter((u) => u.role === "admin").length}
-              </p>
-              <p className="text-xs text-[#8181a5]">Admins</p>
+              <p className="text-xs text-[#8181a5]">Active Customers</p>
             </div>
           </div>
         </div>
@@ -158,22 +129,12 @@ export default function UsersPage() {
           <div className="flex-1">
             <input
               type="text"
-              placeholder="Search by name or email..."
+              placeholder="Search customers by name or email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#5e81f4] text-sm"
             />
           </div>
-          <select
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#5e81f4] text-sm"
-          >
-            <option value="all">All Roles</option>
-            <option value="customer">Customers</option>
-            <option value="seller">Sellers</option>
-            <option value="admin">Admins</option>
-          </select>
         </div>
       </div>
 
@@ -189,12 +150,12 @@ export default function UsersPage() {
           </div>
         ) : filteredUsers.length === 0 ? (
           <div className="p-8 text-center">
-            <span className="text-4xl mb-4 block">👥</span>
-            <p className="text-[#1c1d21] font-medium">No users found</p>
+            <span className="text-4xl mb-4 block">🛒</span>
+            <p className="text-[#1c1d21] font-medium">No customers found</p>
             <p className="text-sm text-[#8181a5] mt-1">
-              {searchTerm || roleFilter !== "all"
-                ? "Try adjusting your filters"
-                : "No users registered yet"}
+              {searchTerm
+                ? "Try adjusting your search"
+                : "No customers registered yet"}
             </p>
           </div>
         ) : (

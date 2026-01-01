@@ -22,14 +22,19 @@ export default function DashboardPage() {
     // Fetch real stats from API
     const fetchStats = async () => {
       try {
-        // In the future, this will be a real API call
-        // For now, we'll set mock data
-        setStats({
-          totalUsers: 0,
-          totalProducts: 0,
-          totalOrders: 0,
-          totalRevenue: 0,
-        })
+        const response = await fetch('/api/stats')
+        const data = await response.json()
+
+        if (response.ok) {
+          setStats({
+            totalUsers: data.totalUsers || 0,
+            totalProducts: data.totalProducts || 0,
+            totalOrders: data.totalOrders || 0,
+            totalRevenue: data.totalRevenue || 0,
+          })
+        } else {
+          console.error("API error:", data.error)
+        }
       } catch (error) {
         console.error("Error fetching stats:", error)
       } finally {
