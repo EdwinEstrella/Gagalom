@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../home/screens/home_screen.dart';
+import '../../../core/screens/main_screen.dart';
 import '../providers/auth_provider.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -328,11 +328,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     setState(() => _isLoading = false);
 
     if (success && mounted) {
-      // Navegar al home y limpiar el stack
+      // Navegar al MainScreen con menú de navegación y limpiar el stack
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
-          builder: (context) => const HomeScreen(),
+          builder: (context) => const MainScreen(),
         ),
         (route) => false,
       );

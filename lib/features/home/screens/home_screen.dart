@@ -115,9 +115,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 children: [
                   Text(
                     _selectedCategory,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(width: 4),
@@ -125,6 +126,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     'assets/icons/arrow-down.svg',
                     width: 16,
                     height: 16,
+                    colorFilter: ColorFilter.mode(
+                      theme.colorScheme.onSurface,
+                      BlendMode.srcIn,
+                    ),
                   ),
                 ],
               ),
@@ -160,6 +165,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _showCategoryBottomSheet(BuildContext context) {
+    final theme = Theme.of(context);
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -181,10 +187,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   category,
                   style: TextStyle(
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
                 trailing: isSelected
-                    ? const Icon(Icons.check, size: 20)
+                    ? Icon(
+                        Icons.check,
+                        size: 20,
+                        color: theme.colorScheme.primary,
+                      )
                     : null,
                 onTap: () {
                   setState(() {

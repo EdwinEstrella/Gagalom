@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../home/screens/home_screen.dart';
+import '../../../core/screens/main_screen.dart';
 import '../providers/auth_provider.dart';
 
 class LoginPasswordScreen extends ConsumerStatefulWidget {
@@ -50,31 +50,49 @@ class _LoginPasswordScreenState extends ConsumerState<LoginPasswordScreen> {
                 children: [
                   const SizedBox(height: 60),
                   Text(
-                    'Sign in',
+                    'Iniciar Sesión',
                     style: theme.textTheme.displaySmall?.copyWith(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
                       letterSpacing: -0.408,
                     ),
+                    textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 40),
 
-                  // Email Display
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.surface,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.email_outlined, color: theme.colorScheme.primary),
-                        const SizedBox(width: 12),
-                        Text(
-                          widget.email,
-                          style: theme.textTheme.bodyLarge,
+                  // Email Display con botón para editar
+                  GestureDetector(
+                    onTap: () {
+                      // Volver a la pantalla anterior para editar el email
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(
+                          color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                          width: 1,
                         ),
-                      ],
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.email_outlined, color: theme.colorScheme.primary),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              widget.email,
+                              style: theme.textTheme.bodyLarge,
+                            ),
+                          ),
+                          Icon(
+                            Icons.edit_outlined,
+                            size: 18,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -88,7 +106,8 @@ class _LoginPasswordScreenState extends ConsumerState<LoginPasswordScreen> {
                         obscureText: _obscurePassword,
                         textInputAction: TextInputAction.done,
                         decoration: InputDecoration(
-                          hintText: 'Password',
+                          labelText: 'Contraseña',
+                          hintText: 'Ingresa tu contraseña',
                           errorText: error,
                           suffixIcon: IconButton(
                             icon: Icon(
@@ -136,7 +155,7 @@ class _LoginPasswordScreenState extends ConsumerState<LoginPasswordScreen> {
                                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
-                          : const Text('Continue'),
+                          : const Text('Continuar'),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -158,9 +177,9 @@ class _LoginPasswordScreenState extends ConsumerState<LoginPasswordScreen> {
                             letterSpacing: -0.408,
                           ),
                           children: [
-                            const TextSpan(text: "Forgot Password ? "),
+                            const TextSpan(text: "¿Olvidaste tu contraseña? "),
                             TextSpan(
-                              text: 'Reset',
+                              text: 'Recuperar',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: theme.colorScheme.primary,
@@ -196,11 +215,11 @@ class _LoginPasswordScreenState extends ConsumerState<LoginPasswordScreen> {
     setState(() => _isLoading = false);
 
     if (success && mounted) {
-      // Navegar al home y limpiar el stack
+      // Navegar al MainScreen con menú de navegación y limpiar el stack
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
-          builder: (context) => const HomeScreen(),
+          builder: (context) => const MainScreen(),
         ),
         (route) => false,
       );

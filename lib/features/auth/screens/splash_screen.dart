@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
-import '../../home/screens/home_screen.dart';
+import '../../../core/screens/main_screen.dart';
 import 'login_screen.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -16,12 +16,18 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
+  bool _hasNavigated = false; // Evitar múltiples navegaciones
 
   @override
   void initState() {
     super.initState();
     _initAnimation();
-    _checkAuthStatus();
+    // Esperar 2.5 segundos y luego verificar estado
+    Future.delayed(const Duration(milliseconds: 2500), () {
+      if (mounted) {
+        _checkAuthStatus();
+      }
+    });
   }
 
   void _initAnimation() {
@@ -48,23 +54,45 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 
   Future<void> _checkAuthStatus() async {
-    await Future.delayed(const Duration(milliseconds: 2500));
+    if (_hasNavigated) return;
 
-    if (!mounted) return;
-
-    // Leer el estado de autenticación directamente del provider
+    // Leer el estado actual
     final authState = ref.read(authProvider);
-    final isAuthenticated = authState.isAuthenticated && !authState.isLoading;
 
-    if (mounted) {
-      if (isAuthenticated) {
+    // Si aún está cargando, esperar un poco más
+    if (authState.isLoading) {
+      await Future.delayed(const Duration(milliseconds: 1000));
+      if (!mounted) return;
+    }
+
+    // Verificar nuevamente después de esperar
+    final finalState = ref.read(authProvider);
+
+    if (finalState.isLoading) {
+      // Si después de esperar sigue cargando, esperar una vez más
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (!mounted) return;
+    }
+
+    // Leer estado final
+    final state = ref.read(authProvider);
+
+    if (_hasNavigated) return;
+    _hasNavigated = true;
+
+    if (state.isAuthenticated && state.user != null) {
+      // Usuario autenticado - navegar al MainScreen con menú
+      if (mounted) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => const HomeScreen(),
+            builder: (context) => const MainScreen(),
           ),
         );
-      } else {
+      }
+    } else {
+      // Usuario no autenticado - navegar al login
+      if (mounted) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(

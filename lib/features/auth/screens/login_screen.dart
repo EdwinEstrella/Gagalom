@@ -36,34 +36,34 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 123),
                 Text(
-                  'Sign in',
+                  'Iniciar Sesión',
                   style: theme.textTheme.displaySmall?.copyWith(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
                     letterSpacing: -0.408,
                   ),
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 40),
 
                 // Email Field
                 Form(
                   key: _formKey,
-                  child: Column(
-                    children: [
-                      TextFormField(
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        textInputAction: TextInputAction.done,
-                        decoration: const InputDecoration(
-                          hintText: 'Email Address',
-                        ),
-                        onFieldSubmitted: (_) => _handleContinue(),
+                  child: SizedBox(
+                    width: 344,
+                    child: TextFormField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      textInputAction: TextInputAction.done,
+                      decoration: const InputDecoration(
+                        hintText: 'Correo electrónico',
                       ),
-                    ],
+                      onFieldSubmitted: (_) => _handleContinue(),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -91,7 +91,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           )
-                        : const Text('Continue'),
+                        : const Text('Continuar'),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -149,9 +149,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           letterSpacing: -0.408,
                         ),
                         children: [
-                          const TextSpan(text: "Dont have an Account ? "),
+                          const TextSpan(text: "¿No tienes cuenta? "),
                           TextSpan(
-                            text: 'Create One',
+                            text: 'Crear una',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: theme.colorScheme.primary,
@@ -165,11 +165,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const SizedBox(height: 60),
 
                 // Social Login
-                const Text(
-                  'Sign up Methods',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
+                const Center(
+                  child: Text(
+                    'O inicia sesión con',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -177,7 +179,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 // Apple Button
                 _buildSocialButton(
                   context,
-                  label: 'Continue With Apple',
+                  label: 'Apple',
                   icon: 'assets/icons/apple.svg',
                   onTap: () {},
                 ),
@@ -186,7 +188,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 // Google Button
                 _buildSocialButton(
                   context,
-                  label: 'Continue With Google',
+                  label: 'Google',
                   icon: 'assets/icons/google.svg',
                   onTap: () {},
                 ),
@@ -195,7 +197,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 // Facebook Button
                 _buildSocialButton(
                   context,
-                  label: 'Continue With Facebook',
+                  label: 'Facebook',
                   icon: 'assets/icons/facebook.svg',
                   onTap: () {},
                 ),
