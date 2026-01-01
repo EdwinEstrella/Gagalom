@@ -22,18 +22,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null
         }
 
-        // For CRM admin users (stored in crm_users table)
+        // Use the existing users table from the main app
         const user = await prisma.user.findUnique({
           where: { email: credentials.email as string },
         })
 
-        if (!user || !user.password) {
+        if (!user || !user.passwordHash) {
+          return null
+        }
+
+        // Check if user is admin
+        if (user.role !== "admin") {
           return null
         }
 
         const passwordMatch = await bcrypt.compare(
           credentials.password as string,
-          user.password
+          user.passwordHash
         )
 
         if (!passwordMatch) {
@@ -41,9 +46,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         return {
-          id: user.id,
+          id: user.id.toString(),
           email: user.email,
-          name: user.name,
+          name: `${user.firstName} ${user.lastName}`.trim(),
           role: user.role,
         }
       },

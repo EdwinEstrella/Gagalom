@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
@@ -11,28 +12,12 @@ datasource db {
 }
 
 // ============================================
-// NextAuth Models
+// NextAuth Models - CRM authentication
 // ============================================
-
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  password      String?
-  role          String    @default("admin") // admin for CRM users
-  accounts      Account[]
-  sessions      Session[]
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
-
-  @@map("crm_users")
-}
 
 model Account {
   id                String  @id @default(cuid())
-  userId            String
+  userId            Int
   type              String
   provider          String
   providerAccountId String  @map("provider_account_id")
@@ -54,7 +39,7 @@ model Account {
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique @map("session_token")
-  userId       String
+  userId       Int
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -72,23 +57,31 @@ model VerificationToken {
 }
 
 // ============================================
-// Shared Database Models (from main app)
+// Main App Models (read-only access for CRM)
 // ============================================
 
-// Modelo de Usuario (del app principal - read-only en CRM)
-model MainAppUser {
+// Modelo de Usuario (del app principal)
+model User {
   id                Int       @id @default(autoincrement())
   email             String    @unique
+  passwordHash      String    @map("password_hash")
   firstName         String?   @map("first_name")
   lastName          String?   @map("last_name")
   gender            String?
   ageRange          String?   @map("age_range")
-  role              String    @default("customer")
+  role              String    @default("customer") // customer, seller, admin
+  stripeCustomerId  String?   @map("stripe_customer_id")
   isActive          Boolean   @default(true) @map("is_active")
   lastLogin         DateTime? @map("last_login")
   createdAt         DateTime  @default(now()) @map("created_at")
   updatedAt         DateTime  @updatedAt @map("updated_at")
 
+  // Relaciones NextAuth
+  accounts          Account[]
+  sessions          Session[]
+
+  // Relaciones App Principal
+  refreshTokens     RefreshToken[]
   orders            Order[]
   products          Product[]
   sellerRequests    SellerRequest[]
@@ -96,7 +89,22 @@ model MainAppUser {
   @@map("users")
 }
 
-// Productos
+// Tokens de refresco para JWT (solo lectura)
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  token     String
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relaciones
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// Productos (solo lectura)
 model Product {
   id             Int       @id @default(autoincrement())
   sellerId       Int?      @map("seller_id")
@@ -105,15 +113,18 @@ model Product {
   price          Decimal   @db.Decimal(10, 2)
   category       String
   imageUrl       String?   @map("image_url")
+  localAssetPath String?   @map("local_asset_path")
   stock          Int       @default(0)
   isActive        Boolean   @default(true) @map("is_active")
+  stripePriceId  String?   @map("stripe_price_id")
   views          Int       @default(0)
   salesCount     Int       @default(0) @map("sales_count")
   rating         Decimal   @default(0) @db.Decimal(3, 2)
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")
 
-  seller         MainAppUser? @relation(fields: [sellerId], references: [id], onDelete: SetNull)
+  // Relaciones
+  seller         User?     @relation(fields: [sellerId], references: [id], onDelete: SetNull)
   orderItems     OrderItem[]
 
   @@index([sellerId])
@@ -122,7 +133,7 @@ model Product {
   @@map("products")
 }
 
-// Solicitudes de vendedor
+// Solicitudes de vendedor (solo lectura)
 model SellerRequest {
   id                  Int       @id @default(autoincrement())
   userId              Int       @map("user_id")
@@ -141,14 +152,15 @@ model SellerRequest {
   createdAt           DateTime  @default(now()) @map("created_at")
   updatedAt           DateTime  @updatedAt @map("updated_at")
 
-  user                MainAppUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Relaciones
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([status])
   @@map("seller_requests")
 }
 
-// Órdenes de compra
+// Órdenes de compra (solo lectura)
 model Order {
   id                   Int          @id @default(autoincrement())
   userId               Int          @map("user_id")
@@ -159,7 +171,8 @@ model Order {
   createdAt            DateTime     @default(now()) @map("created_at")
   updatedAt            DateTime     @updatedAt @map("updated_at")
 
-  user                 MainAppUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Relaciones
+  user                 User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   items                OrderItem[]
 
   @@index([userId])
@@ -167,7 +180,7 @@ model Order {
   @@map("orders")
 }
 
-// Items de una orden
+// Items de una orden (solo lectura)
 model OrderItem {
   id          Int      @id @default(autoincrement())
   orderId     Int      @map("order_id")
@@ -175,6 +188,7 @@ model OrderItem {
   quantity    Int
   priceAtTime Decimal  @map("price_at_time") @db.Decimal(10, 2)
 
+  // Relaciones
   order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product     Product  @relation(fields: [productId], references: [id])
 
