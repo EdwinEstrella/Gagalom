@@ -22,12 +22,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   void initState() {
     super.initState();
     _initAnimation();
-    // Esperar 2.5 segundos y luego verificar estado
-    Future.delayed(const Duration(milliseconds: 2500), () {
-      if (mounted) {
-        _checkAuthStatus();
-      }
-    });
   }
 
   void _initAnimation() {
@@ -53,56 +47,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     _animationController.forward();
   }
 
-  Future<void> _checkAuthStatus() async {
-    if (_hasNavigated) return;
-
-    // Leer el estado actual
-    final authState = ref.read(authProvider);
-
-    // Si aún está cargando, esperar un poco más
-    if (authState.isLoading) {
-      await Future.delayed(const Duration(milliseconds: 1000));
-      if (!mounted) return;
-    }
-
-    // Verificar nuevamente después de esperar
-    final finalState = ref.read(authProvider);
-
-    if (finalState.isLoading) {
-      // Si después de esperar sigue cargando, esperar una vez más
-      await Future.delayed(const Duration(milliseconds: 500));
-      if (!mounted) return;
-    }
-
-    // Leer estado final
-    final state = ref.read(authProvider);
-
-    if (_hasNavigated) return;
-    _hasNavigated = true;
-
-    if (state.isAuthenticated && state.user != null) {
-      // Usuario autenticado - navegar al MainScreen con menú
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const MainScreen(),
-          ),
-        );
-      }
-    } else {
-      // Usuario no autenticado - navegar al login
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const LoginScreen(),
-          ),
-        );
-      }
-    }
-  }
-
   @override
   void dispose() {
     _animationController.dispose();
@@ -112,6 +56,36 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final authState = ref.watch(authProvider);
+
+    print('🔄 [SPLASH] Build: isLoading=${authState.isLoading}, isAuthenticated=${authState.isAuthenticated}');
+
+    // Verificar estado actual y navegar si es apropiado
+    if (!authState.isLoading && !_hasNavigated) {
+      print('⏳ [SPLASH] Estado listo, esperando 5 segundos antes de navegar...');
+
+      // Esperar 5 segundos para mostrar la animación y verificar token
+      Future.delayed(const Duration(seconds: 5), () {
+        if (!_hasNavigated && mounted) {
+          _hasNavigated = true;
+          final currentState = ref.read(authProvider);
+
+          if (currentState.isAuthenticated && currentState.user != null) {
+            print('✅ [SPLASH] Usuario autenticado, navegando a MainScreen');
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const MainScreen()),
+            );
+          } else {
+            print('⚠️ [SPLASH] Usuario no autenticado, navegando a LoginScreen');
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const LoginScreen()),
+            );
+          }
+        }
+      });
+    }
 
     return Scaffold(
       backgroundColor: theme.colorScheme.primary,

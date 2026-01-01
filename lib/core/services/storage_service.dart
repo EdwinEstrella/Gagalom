@@ -2,9 +2,12 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 
 class StorageService {
+  // Configuración más explícita para Android
   static const _storage = FlutterSecureStorage(
     aOptions: AndroidOptions(
-      encryptedSharedPreferences: true,
+      encryptedSharedPreferences: false, // Usar KeyStore directamente
+      keyCipherAlgorithm: KeyCipherAlgorithm.RSA_ECB_OAEPwithSHA_256andMGF1Padding,
+      storageCipherAlgorithm: StorageCipherAlgorithm.AES_GCM_NoPadding,
     ),
     iOptions: IOSOptions(
       accessibility: KeychainAccessibility.first_unlock,
@@ -19,22 +22,43 @@ class StorageService {
 
   // Guardar token de acceso
   static Future<void> saveAccessToken(String token) async {
-    print('💾 [STORAGE] Guardando access token...');
+    print('\n💾 [STORAGE] === GUARDANDO TOKEN ===');
     print('🔑 [STORAGE] Token: ${token.substring(0, 20)}... (${token.length} caracteres)');
-    await _storage.write(key: _accessTokenKey, value: token);
-    print('✅ [STORAGE] Access token guardado exitosamente');
+    try {
+      await _storage.write(key: _accessTokenKey, value: token);
+      print('✅ [STORAGE] Token guardado en storage');
+      // Verificar que se guardó correctamente
+      final saved = await _storage.read(key: _accessTokenKey);
+      if (saved != null) {
+        print('✅ [STORAGE] VERIFICADO: Token almacenado correctamente (${saved.length} caracteres)');
+      } else {
+        print('⚠️  [STORAGE] ERROR: Token no se almacenó correctamente');
+      }
+    } catch (e) {
+      print('❌ [STORAGE] Error guardando token: $e');
+      rethrow;
+    }
+    print('💾 [STORAGE] === TOKEN GUARDADO ===\n');
   }
 
   // Obtener token de acceso
   static Future<String?> getAccessToken() async {
-    print('🔍 [STORAGE] Leyendo access token...');
-    final token = await _storage.read(key: _accessTokenKey);
-    if (token != null) {
-      print('✅ [STORAGE] Token encontrado: ${token.substring(0, 20)}... (${token.length} caracteres)');
-    } else {
-      print('⚠️  [STORAGE] No hay token almacenado');
+    print('\n🔍 [STORAGE] === LEYENDO TOKEN ===');
+    try {
+      final token = await _storage.read(key: _accessTokenKey);
+      if (token != null) {
+        print('✅ [STORAGE] Token encontrado: ${token.substring(0, 20)}... (${token.length} caracteres)');
+        print('🔍 [STORAGE] === TOKEN LEÍDO ===\n');
+      } else {
+        print('⚠️  [STORAGE] No hay token almacenado');
+        print('🔍 [STORAGE] === TOKEN LEÍDO ===\n');
+      }
+      return token;
+    } catch (e) {
+      print('❌ [STORAGE] Error leyendo token: $e');
+      print('🔍 [STORAGE] === ERROR LECTURA ===\n');
+      return null;
     }
-    return token;
   }
 
   // Eliminar token de acceso
@@ -203,5 +227,28 @@ class StorageService {
 
     print('🔐 [STORAGE] === VERIFICACIÓN COMPLETADA ===\n');
     return isAuthenticated;
+  }
+
+  // DEBUG: Mostrar todos los datos almacenados
+  static Future<void> debugShowAllData() async {
+    print('\n🐛 [STORAGE] === DEBUG: TODOS LOS DATOS ALMACENADOS ===');
+    try {
+      final allData = await _storage.readAll();
+      if (allData.isEmpty) {
+        print('⚠️  [STORAGE] NO HAY DATOS ALMACENADOS');
+      } else {
+        print('📦 [STORAGE] Cantidad de items: ${allData.length}');
+        allData.forEach((key, value) {
+          final maskedValue = key.contains('token') || key.contains('password')
+              ? '${value.substring(0, value.length > 20 ? 20 : value.length)}... (${value.length} chars)'
+              : value;
+          print('  🔑 $key: $maskedValue');
+        });
+      }
+      print('🐛 [STORAGE] === FIN DEBUG ===\n');
+    } catch (e) {
+      print('❌ [STORAGE] Error leyendo datos: $e');
+      print('🐛 [STORAGE] === FIN DEBUG ===\n');
+    }
   }
 }

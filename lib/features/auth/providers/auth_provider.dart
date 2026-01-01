@@ -24,6 +24,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> _initAuth() async {
     print('\n🔄 [AUTH_PROVIDER] === INICIANDO AUTENTICACIÓN ===');
 
+    // DEBUG: Mostrar todos los datos almacenados
+    await StorageService.debugShowAllData();
+
     final isAuthenticated = await StorageService.isAuthenticated();
     print('🔑 [AUTH_PROVIDER] Token existe en storage: $isAuthenticated');
 

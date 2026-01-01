@@ -95,6 +95,9 @@ class AuthApiService {
         print('💾 [AUTH_API] Guardando access token...');
         await StorageService.saveAccessToken(data['accessToken']);
         print('✅ [AUTH_API] Token guardado: ${data['accessToken'].toString().substring(0, 20)}...');
+
+        // DEBUG: Verificar que se guardó correctamente
+        await StorageService.debugShowAllData();
       }
 
       if (data['user'] != null) {
@@ -106,6 +109,9 @@ class AuthApiService {
           firstName: user.firstName,
         );
         print('✅ [AUTH_API] Info de usuario guardada en storage');
+
+        // DEBUG: Verificar que se guardó
+        await StorageService.debugShowAllData();
       }
 
       print('🎉 [AUTH_API] === REGISTRO COMPLETADO ===\n');
@@ -153,6 +159,9 @@ class AuthApiService {
         print('💾 [AUTH_API] Guardando access token...');
         await StorageService.saveAccessToken(data['accessToken']);
         print('✅ [AUTH_API] Token guardado: ${data['accessToken'].toString().substring(0, 20)}...');
+
+        // DEBUG: Verificar que se guardó correctamente
+        await StorageService.debugShowAllData();
       }
 
       if (data['user'] != null) {
@@ -164,6 +173,9 @@ class AuthApiService {
           firstName: user.firstName,
         );
         print('✅ [AUTH_API] Info de usuario guardada en storage');
+
+        // DEBUG: Verificar que se guardó
+        await StorageService.debugShowAllData();
       }
 
       print('🎉 [AUTH_API] === LOGIN COMPLETADO ===\n');
